@@ -109,7 +109,7 @@ def catch_error(func):
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except Exception as e:
+        except Exception:
             self.logger.error(f"{self.request.__dict__} {print_exc()}")
             return BadRequest()
     return wrapper

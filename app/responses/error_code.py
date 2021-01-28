@@ -16,5 +16,6 @@ ERROR_CODE = {
     1014: "too many request",
     1015: "permission denied",
     1016: "unregistered",
-    1017: "password error"
+    1017: "password error",
+    1018: "send captcha failed",
 }

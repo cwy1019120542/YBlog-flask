@@ -4,6 +4,7 @@ from flask_pymongo import PyMongo
 from flask_redis import FlaskRedis
 from flask_mail import Mail
 from flask_limiter import Limiter
+from flask_cors import CORS
 
 mongo_client = PyMongo()
 redis_client = FlaskRedis()
@@ -15,6 +16,7 @@ def init_extentions(app):
     redis_client.init_app(app)
     mail.init_app(app)
     limiter.init_app(app)
+    CORS(app)
 
 def get_logging_handler(mailhost, fromaddr, password, log_path):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

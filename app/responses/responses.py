@@ -98,3 +98,8 @@ class PasswordError(JsonResponse):
     def __init__(self, *args, **kwargs):
         error_code = 1017
         super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=401, *args, **kwargs)
+
+class SendCaptchaFailed(JsonResponse):
+    def __init__(self, *args, **kwargs):
+        error_code = 1018
+        super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=400, *args, **kwargs)
