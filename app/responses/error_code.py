@@ -12,7 +12,7 @@ ERROR_CODE = {
     1010: "invalid captcha",
     1011: "not found",
     1012: "method not allowed",
-    1013: "'{}' conflict",
+    1013: "email conflict",
     1014: "too many request",
     1015: "permission denied",
     1016: "unregistered",

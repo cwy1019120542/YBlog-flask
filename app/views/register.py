@@ -1,5 +1,5 @@
 from .base import Base
-from ..responses.responses import Created, Conflict, InvalidCaptcha
+from ..responses.responses import Created, EmailConflict, InvalidCaptcha
 from ..extentions import redis_client
 
 class Register(Base):
@@ -14,7 +14,7 @@ class Register(Base):
         email = self.body["email"]
         repeat_email = self.model.find_exists({"email": email})
         if repeat_email:
-            return Conflict("email")
+            return EmailConflict()
         db_captcha = redis_client.get(f"{email}_captcha")
         if not db_captcha:
             return InvalidCaptcha()

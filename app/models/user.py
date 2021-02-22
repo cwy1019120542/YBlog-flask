@@ -9,11 +9,11 @@ class User(Base):
         "birthday": [int, 10, 0, None, None],
         "email": [str, 100, None, check_email, None],
         "password": [str, 32, None, md5_password, None],
-        "scope": [dict, 4, SCOPE, lambda i: SCOPE, None]
+        "scope": [dict, None, SCOPE, lambda i: SCOPE, None]
     }
     params_fields = ("id", "email")
-    find_except_fields = ("_id", "password")
-    find_one_except_fields = ("_id", "password")
+    find_except_fields = ("_id", "password", "scope")
+    find_one_except_fields = ("_id", "password", "scope")
 
     def __init__(self):
         super().__init__("user")

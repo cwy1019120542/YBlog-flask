@@ -66,10 +66,10 @@ class MethodNotAllowed(JsonResponse):
         error_code = 1012
         super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=405, *args, **kwargs)
 
-class Conflict(JsonResponse):
-    def __init__(self, key, *args, **kwargs):
+class EmailConflict(JsonResponse):
+    def __init__(self, *args, **kwargs):
         error_code = 1013
-        super().__init__(error_code=error_code, message=ERROR_CODE[error_code].format(key), status=409, *args, **kwargs)
+        super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=409, *args, **kwargs)
 
 class TooManyRequest(JsonResponse):
     def __init__(self, *args, **kwargs):

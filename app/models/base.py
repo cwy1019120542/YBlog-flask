@@ -5,7 +5,7 @@ from pymongo.collection import ReturnDocument
 from ..extentions import mongo_client
 from ..func_tools.tool_func import get_timestamp
 
-def clean_fields(limit_fields_name):
+def clean_fields(limit_fields_name):        #清洗查询字段
     def decorator(func):
         @wraps(func)
         def wrapper(self, data, *args, **kwargs):
@@ -17,7 +17,7 @@ def clean_fields(limit_fields_name):
         return wrapper
     return decorator
 
-def clean_one_return(func):
+def clean_one_return(func):     #清洗返回的单条数据
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = func(self, *args, **kwargs)
@@ -27,7 +27,7 @@ def clean_one_return(func):
         return data
     return wrapper
 
-def clean_return(func):
+def clean_return(func):     #清洗返回的多条数据
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data_list = func(self, *args, **kwargs)
@@ -49,7 +49,6 @@ class Base:
     def __init__(self, model_name):
         self.model_name = model_name
         self.collection = mongo_client.db[self.model_name]
-        self.params_fields = ()
 
     @clean_fields("params_fields")
     def find_exists(self, params):
@@ -68,7 +67,7 @@ class Base:
 
     @clean_one_return
     @clean_fields("params_fields")
-    def find_all_fields(self, params):
+    def find_all_fields(self, params):      #查询单条数据的所有字段
         return self.collection.find_one(params)
 
     @clean_one_return

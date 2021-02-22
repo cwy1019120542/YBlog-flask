@@ -11,7 +11,7 @@ class Token(EncryptedAPI):
     methods = ["POST"]
 
     def __init__(self, *args, **kwargs):
-        super().__init__("user", *args, **kwargs)
+        super().__init__("user", 'token', *args, **kwargs)
         self.body_rule["POST"] = {
             "email": self.model.fields["email"],
             "password": self.model.fields["password"],

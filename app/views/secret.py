@@ -21,9 +21,10 @@ class Secret(Base):
             return Unregistered()
         if user["password"] != self.body["password"]:
             return PasswordError()
-        secret_key = f"user_{user['id']}_secret"
+        user_id = user['id']
+        secret_key = f"user_{user_id}_secret"
         user_secret = redis_client.get(secret_key)
         if not user_secret:
             user_secret = str(uuid.uuid1())
             redis_client.set(secret_key, user_secret, ex=604800)
-        return Created({"secret": str(user_secret)})
+        return Created({"secret": str(user_secret), "user_id": user_id})

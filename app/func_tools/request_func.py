@@ -18,8 +18,13 @@ def clean_request(request_func):
             clean_data = {}
             for key, key_attr in api_rule.items():
                 key_type, max_length, default, func = key_attr[:4]
-                if key not in data and default == None and kind == "body":
-                    return KeyLost(key, kind)
+                if key not in data:
+                    if default != None:
+                        clean_data[key] = default
+                        continue
+                    else:
+                        if kind == "body":
+                            return KeyLost(key, kind)
                 value = data.get(key, default)
                 if value == None and kind == "params":
                     continue
@@ -67,7 +72,7 @@ def authentication(func):
         if exp <= timestamp:
             return TokenExpired()
         scope = token_payload_decode["scope"][self.method]
-        if self.model_name and self.model_name not in scope:
+        if self.scope_name not in scope:
             return Forbidden()
         return func(self, user_id, *args, **kwargs)
     return wrapper
