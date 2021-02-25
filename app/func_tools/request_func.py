@@ -8,39 +8,41 @@ from ..config.secret_config import AUTHORIZATION_SECRET
 from ..models.models import MODELS
 from ..extentions import redis_client
 
+def generate_clean_data(kind, data, api_rule):
+    clean_data = {}
+    for key, key_attr in api_rule.items():
+        key_type, max_length, default, func, is_require = key_attr[:5]      #is_require只针对url参数
+        if key not in data or data[key] == None:
+            if default != None:
+                clean_data[key] = default
+                continue
+            else:
+                if kind == "body" or is_require:
+                    return KeyLost(key, kind)
+                else:
+                    continue
+        value = data[key]
+        value = func(value) if func else value
+        if isinstance(value, FormatError):
+            return IllegalKey(key, kind)
+        if not isinstance(value, key_type):
+            try:
+                value = key_type(value)
+            except:
+                return TypeError(key, kind, key_type)
+        if max_length:
+            if len(str(value)) > max_length:
+                return LengthError(key, kind, max_length)
+        clean_data[key] = value
+    return clean_data
+
 def clean_request(request_func):
     @wraps(request_func)
     def wrapper(self, *args, **kwargs):
-        params_rule = {**self.params_rule.get(self.method, {}), **self.params_rule["base"]}
-        body_rule = self.body_rule.get(self.method, {})
-        for kind, data, api_rule in (
-                ("params", self.params, params_rule), ("body", self.body, body_rule)):
-            clean_data = {}
-            for key, key_attr in api_rule.items():
-                key_type, max_length, default, func = key_attr[:4]
-                if key not in data:
-                    if default != None:
-                        clean_data[key] = default
-                        continue
-                    else:
-                        if kind == "body":
-                            return KeyLost(key, kind)
-                value = data.get(key, default)
-                if value == None and kind == "params":
-                    continue
-                value = func(value) if func else value
-                if isinstance(value, FormatError):
-                    return IllegalKey(key, kind)
-                if not isinstance(value, key_type):
-                    try:
-                        value = key_type(value)
-                    except:
-                        return TypeError(key, kind, key_type)
-                if max_length:
-                    length = len(str(value))
-                    if length > max_length:
-                        return LengthError(key, kind, max_length)
-                clean_data[key] = value
+        for kind, data, api_rule in (("params", self.params, self.params_rule), ("body", self.body, self.body_rule)):
+            clean_data = generate_clean_data(kind, data, api_rule)
+            if not isinstance(clean_data, dict):
+                return clean_data
             setattr(self, kind, clean_data)
         return request_func(self, *args, **kwargs)
     return wrapper
@@ -81,27 +83,23 @@ def check_request(request_func):
     @wraps(request_func)
     def wrapper(self, user_id, *args, **kwargs):
         timestamp = get_timestamp()
-        clean_group = {**self.params, **self.body}
-        clean_group["url"] = self.url
-        secret = redis_client.get(f"user_{user_id}_secret")
+        secret = redis_client.get(f"user_{user_id}_secret").decode()
         if not secret:
-            return InvalidRequest()
-        clean_group["secret"] = secret
-        group_key_list = list(clean_group)
-        group_key_list.sort()
-        item_str_list = []
-        for group_key in group_key_list:
-            item_str_list.append(f"{group_key}={clean_group[group_key]}")
-        item_str = "&".join(item_str_list)
-        md5_item_str = hashlib.md5(item_str.encode()).hexdigest()
-        signature = self.params["signature"]
-        if md5_item_str != signature:
-            return InvalidRequest()
-        request_timestamp = self.params["timestamp"]
-        if timestamp - request_timestamp >= 60:
+            return SecretExpired()
+        print(self.params)
+        clean_data = generate_clean_data("params", self.params, {"timestamp": (int, 10, None, None, True), "signature": (str, 64, None, None, True), "uid": (str, 36, None, None, True)})
+        if not isinstance(clean_data, dict):
+            return clean_data
+        print(self.params)
+        request_signature = self.params.pop("signature")
+        item_str = ".".join(sort_and_connect(i) for i in ({"url": self.url, "secret": secret, "method": self.method}, self.params, self.body))
+        print(item_str)
+        signature = hashlib.md5(item_str.encode()).hexdigest()
+        if signature != request_signature:
+            return SignatureError()
+        if timestamp - self.params["timestamp"] >= 60:
             return RequestExpired()
-        request_uid = self.params["uid"]
-        request_uid_key = f"request_uid_{request_uid}"
+        request_uid_key = f"request_uid_{self.params['uid']}"
         uid = redis_client.get(request_uid_key)
         if uid:
             return RepeatRequest()

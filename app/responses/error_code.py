@@ -18,4 +18,5 @@ ERROR_CODE = {
     1016: "unregistered",
     1017: "password error",
     1018: "send captcha failed",
+    1019: "signature error",
 }

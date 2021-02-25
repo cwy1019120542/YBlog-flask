@@ -14,7 +14,7 @@ class Captcha(Base):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.body_rule["POST"] = {
+        self.body_rule = {
             "email": [str, 100, None, check_email]
         }
 

@@ -27,7 +27,7 @@ def create_app(config_type):
     app.config.from_object(env_config[config_type])
     init_extentions(app)
     add_with_prefix(app, "", (("/register", Register), ("/captcha", Captcha), ("/secret", Secret)))
-    add_with_prefix(app, "/users/<int:user_id>", (("/token", Token), ))
+    add_with_prefix(app, "/user/<int:user_id>", (("/token", Token), ))
     app.logger.removeHandler(default_handler)
     app.logger.setLevel(logging.DEBUG)
     for logging_handler in get_logging_handler(app.config["MAIL_SERVER"], app.config["MAIL_USERNAME"],

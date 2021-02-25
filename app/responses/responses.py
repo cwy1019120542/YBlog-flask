@@ -26,7 +26,7 @@ class RequestExpired(JsonResponse):
         error_code = 1004
         super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=400, *args, **kwargs)
 
-class InvalidRequest(JsonResponse):
+class SecretExpired(JsonResponse):
     def __init__(self, *args, **kwargs):
         error_code = 1005
         super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=400, *args, **kwargs)
@@ -102,4 +102,9 @@ class PasswordError(JsonResponse):
 class SendCaptchaFailed(JsonResponse):
     def __init__(self, *args, **kwargs):
         error_code = 1018
+        super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=400, *args, **kwargs)
+
+class SignatureError(JsonResponse):
+    def __init__(self, *args, **kwargs):
+        error_code = 1019
         super().__init__(error_code=error_code, message=ERROR_CODE[error_code], status=400, *args, **kwargs)

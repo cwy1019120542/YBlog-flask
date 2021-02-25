@@ -8,7 +8,7 @@ class Register(Base):
 
     def __init__(self, *args, **kwargs):
         super().__init__(model_name="user", *args, **kwargs)
-        self.body_rule["POST"]["captcha"] = [int, 6, None, None]
+        self.body_rule["captcha"] = [int, 6, None, None]
 
     def post(self):
         email = self.body["email"]

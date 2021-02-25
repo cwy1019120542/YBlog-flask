@@ -24,20 +24,14 @@ class Base(views.MethodView):
         self.body = request.json if request.json else {}
         self.files = request.files
         self.headers = request.headers
-        self.method = request.method
+        self.method = request.method.lower()
         self.url = request.url
         self.ip = request.remote_addr
         self.model = MODELS[model_name]() if model_name else None
         self.scope_name = scope_name
         model_fields = deepcopy(self.model.fields) if self.model else {}
-        self.params_rule = {
-            "base": {},
-            "GET": {}
-        }
-        self.body_rule = {
-            "POST": model_fields,
-            "PUT": model_fields,
-        }
+        self.params_rule = deepcopy(self.model.params_fields) if self.model else {}
+        self.body_rule = model_fields
         self.logger = current_app.logger
 
     def get(self, *args, **kwargs):
@@ -54,19 +48,11 @@ class Base(views.MethodView):
 
 class EncryptedAPI(Base):
 
-    decorator_list = [clean_request, check_request, check_resource, catch_error]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.params_rule["base"] = {
-            "timestamp": (int, 10, None, None),
-            "signature": (str, 64, None, None),
-            "uid": (str, 36, None, None)
-        }
+    decorator_list = [check_request, clean_request , check_resource, catch_error]
 
 class Authentication(EncryptedAPI):
 
-    decorator_list = [clean_request, check_request, authentication, check_resource, catch_error]
+    decorator_list = [authentication, check_request, clean_request, check_resource, catch_error]
 
 
 

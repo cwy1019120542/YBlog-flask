@@ -9,7 +9,7 @@ class Secret(Base):
 
     def __init__(self, *args, **kwargs):
         super().__init__("user", *args, **kwargs)
-        self.body_rule["POST"] = {
+        self.body_rule = {
             "email": self.model.fields["email"],
             "password": self.model.fields["password"]
         }
